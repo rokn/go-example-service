@@ -1,0 +1,40 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task -l
+    desc: Lists all available tasks
+
+  docs:
+    desc: Generate Swagger documentation
+    cmds:
+      - swag init -g cmd/api/main.go
+
+  run:
+    desc: Run the API server
+    deps: [docs]
+    cmds:
+      - go run cmd/api/main.go
+
+  build:
+    desc: Build the application
+    cmds:
+      - go build -o bin/api cmd/api/main.go
+
+  dev:
+    desc: Run the server in development mode with hot-reload
+    deps: [docs]
+    cmds:
+      - air -c .air.toml
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+
+  clean:
+    desc: Clean build artifacts and docs
+    cmds:
+      - rm -rf bin/
+      - rm -rf docs/ 

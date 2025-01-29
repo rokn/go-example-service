@@ -1,0 +1,120 @@
+basePath: /api
+definitions:
+  handler.BaseResponse:
+    properties:
+      data: {}
+      errors:
+        items: {}
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  requests.UserCreateRequest:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      name:
+        example: John Doe
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  responses.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: A User management API with Redis caching
+  title: User API
+  version: "1.0"
+paths:
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided information
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.UserResponse'
+              type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/handler.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.BaseResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user details by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.UserResponse'
+              type: object
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/handler.BaseResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/handler.BaseResponse'
+      summary: Get a user by ID
+      tags:
+      - users
+swagger: "2.0"
