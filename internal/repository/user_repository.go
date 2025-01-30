@@ -12,25 +12,32 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+// UserRepository defines the interface for user repository operations
+type UserRepository interface {
+	Create(user *model.User) error
+	GetByID(id uint) (*model.User, error)
+	GetByEmail(email string) (*model.User, error)
+}
+
+type userRepository struct {
 	db           *gorm.DB
-	cacheManager *cache.CacheManager
+	cacheManager cache.Manager
 	logger       *zap.Logger
 }
 
-func NewUserRepository(db *gorm.DB, cacheManager *cache.CacheManager) *UserRepository {
-	return &UserRepository{
+func NewUserRepository(db *gorm.DB, cacheManager cache.Manager) UserRepository {
+	return &userRepository{
 		db:           db,
 		cacheManager: cacheManager,
 		logger:       logger.GetLogger().With(zap.String("component", "user-repository")),
 	}
 }
 
-func (r *UserRepository) Create(user *model.User) error {
+func (r *userRepository) Create(user *model.User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *UserRepository) GetByID(id uint) (*model.User, error) {
+func (r *userRepository) GetByID(id uint) (*model.User, error) {
 	r.logger.Info("Getting user by ID", zap.Uint("id", id))
 
 	var user model.User
@@ -61,7 +68,7 @@ func (r *UserRepository) GetByID(id uint) (*model.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetByEmail(email string) (*model.User, error) {
+func (r *userRepository) GetByEmail(email string) (*model.User, error) {
 	var user model.User
 	cacheKey := fmt.Sprintf("user:email:%s", email)
 

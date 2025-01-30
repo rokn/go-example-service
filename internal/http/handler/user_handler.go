@@ -11,12 +11,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserHandler struct {
-	service *service.UserService
+// UserHandler defines the interface for user handler operations
+type UserHandler interface {
+	Create(c *gin.Context)
+	Get(c *gin.Context)
 }
 
-func NewUserHandler(service *service.UserService) *UserHandler {
-	return &UserHandler{
+type userHandler struct {
+	service service.UserService
+}
+
+func NewUserHandler(service service.UserService) UserHandler {
+	return &userHandler{
 		service: service,
 	}
 }
@@ -32,7 +38,7 @@ func NewUserHandler(service *service.UserService) *UserHandler {
 // @Failure 400 {object} BaseResponse "Invalid request payload"
 // @Failure 500 {object} BaseResponse "Internal server error"
 // @Router /users [post]
-func (h *UserHandler) Create(c *gin.Context) {
+func (h *userHandler) Create(c *gin.Context) {
 	var req requests.UserCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid request payload", []interface{}{err.Error()})
@@ -69,7 +75,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 // @Failure 400 {object} BaseResponse "Invalid ID"
 // @Failure 404 {object} BaseResponse "User not found"
 // @Router /users/{id} [get]
-func (h *UserHandler) Get(c *gin.Context) {
+func (h *userHandler) Get(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid ID", []interface{}{err.Error()})

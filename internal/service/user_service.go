@@ -8,17 +8,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserService struct {
-	repo *repository.UserRepository
+// UserService defines the interface for user service operations
+type UserService interface {
+	CreateUser(user *model.User) ([]validator.ValidationError, error)
+	GetUser(id uint) (*model.User, error)
+	GetUserByEmail(email string) (*model.User, error)
+	Login(email, password string) (*model.User, error)
 }
 
-func NewUserService(repo *repository.UserRepository) *UserService {
-	return &UserService{
+type userService struct {
+	repo repository.UserRepository
+}
+
+func NewUserService(repo repository.UserRepository) UserService {
+	return &userService{
 		repo: repo,
 	}
 }
 
-func (s *UserService) CreateUser(user *model.User) ([]validator.ValidationError, error) {
+func (s *userService) CreateUser(user *model.User) ([]validator.ValidationError, error) {
 	errors := validator.ValidateStruct(user)
 	if len(errors) > 0 {
 		return errors, nil
@@ -35,15 +43,15 @@ func (s *UserService) CreateUser(user *model.User) ([]validator.ValidationError,
 	return nil, err
 }
 
-func (s *UserService) GetUser(id uint) (*model.User, error) {
+func (s *userService) GetUser(id uint) (*model.User, error) {
 	return s.repo.GetByID(id)
 }
 
-func (s *UserService) GetUserByEmail(email string) (*model.User, error) {
+func (s *userService) GetUserByEmail(email string) (*model.User, error) {
 	return s.repo.GetByEmail(email)
 }
 
-func (s *UserService) Login(email, password string) (*model.User, error) {
+func (s *userService) Login(email, password string) (*model.User, error) {
 	user, err := s.GetUserByEmail(email)
 	if err != nil {
 		return nil, err

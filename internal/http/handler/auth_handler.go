@@ -12,12 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthHandler struct {
-	userService    *service.UserService
+// AuthHandler defines the interface for authentication handler operations
+type AuthHandler interface {
+	Middleware() *jwt.GinJWTMiddleware
+}
+
+type authHandler struct {
+	userService    service.UserService
 	authMiddleware *jwt.GinJWTMiddleware
 }
 
-func NewAuthHandler(userService *service.UserService, cfg *config.AuthConfig) (*AuthHandler, error) {
+func NewAuthHandler(userService service.UserService, cfg *config.AuthConfig) (AuthHandler, error) {
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:           cfg.Realm,
 		Key:             []byte(cfg.SecretKey),
@@ -38,7 +43,7 @@ func NewAuthHandler(userService *service.UserService, cfg *config.AuthConfig) (*
 		return nil, err
 	}
 
-	return &AuthHandler{
+	return &authHandler{
 		userService:    userService,
 		authMiddleware: authMiddleware,
 	}, nil
@@ -64,7 +69,7 @@ func identityHandler(c *gin.Context) interface{} {
 	}
 }
 
-func authenticator(userService *service.UserService) func(*gin.Context) (interface{}, error) {
+func authenticator(userService service.UserService) func(*gin.Context) (interface{}, error) {
 	return func(c *gin.Context) (interface{}, error) {
 		var loginReq requests.LoginRequest
 		if err := c.ShouldBindJSON(&loginReq); err != nil {
@@ -93,6 +98,6 @@ func unauthorized(c *gin.Context, code int, message string) {
 	NewErrorResponse(c, code, "Unauthorized", []interface{}{message})
 }
 
-func (h *AuthHandler) Middleware() *jwt.GinJWTMiddleware {
+func (h *authHandler) Middleware() *jwt.GinJWTMiddleware {
 	return h.authMiddleware
 }
