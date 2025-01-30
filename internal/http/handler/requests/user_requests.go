@@ -17,3 +17,9 @@ func (r *UserCreateRequest) ToModel() *model.User {
 		Password: r.Password,
 	}
 }
+
+// LoginRequest represents the request payload for user login
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email" example:"john.doe@example.com"`
+	Password string `json:"password" validate:"required" example:"password123"`
+}

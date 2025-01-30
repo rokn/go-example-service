@@ -51,9 +51,13 @@ func main() {
 	userRepo := repository.NewUserRepository(db, redisClient)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
+	authHandler, err := handler.NewAuthHandler(userService, &cfg.Auth)
+	if err != nil {
+		log.Fatal("Cannot initialize auth handler", zap.Error(err))
+	}
 
 	// Setup router
-	r := router.SetupRouter(userHandler)
+	r := router.SetupRouter(userHandler, authHandler)
 
 	// Start server
 	log.Info("Starting server", zap.String("port", cfg.App.Port))

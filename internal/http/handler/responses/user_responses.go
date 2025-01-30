@@ -4,11 +4,11 @@ import "example/internal/model"
 
 // UserResponse represents the response payload for user data
 type UserResponse struct {
-	ID        uint   `json:"id"`
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        uint   `json:"id" example:"1"`
+	Name      string `json:"name" example:"John Doe"`
+	Email     string `json:"email" example:"john.doe@example.com"`
+	CreatedAt string `json:"created_at" example:"2024-01-01 10:00:00"`
+	UpdatedAt string `json:"updated_at" example:"2024-01-01 10:00:00"`
 }
 
 // FromModel creates UserResponse from model.User

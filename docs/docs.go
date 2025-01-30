@@ -142,6 +142,9 @@ const docTemplate = `{
                 "message": {
                     "type": "string"
                 },
+                "status": {
+                    "type": "integer"
+                },
                 "success": {
                     "type": "boolean"
                 }

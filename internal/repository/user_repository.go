@@ -3,9 +3,11 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"example/internal/model"
 	"example/pkg/logger"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -66,5 +68,32 @@ func (r *UserRepository) GetByID(id uint) (*model.User, error) {
 	}
 
 	r.logger.Debug("Successfully retrieved user", zap.Uint("id", id))
+	return &user, nil
+}
+
+func (r *UserRepository) GetByEmail(email string) (*model.User, error) {
+	var user model.User
+
+	// Try to get from Redis first
+	cacheKey := fmt.Sprintf("user:email:%s", email)
+	if err := r.redis.Get(context.Background(), cacheKey).Scan(&user); err == nil {
+		return &user, nil
+	}
+
+	// If not in Redis, get from database
+	result := r.db.Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	// Cache the user in Redis
+	if err := r.redis.Set(context.Background(), cacheKey, user, time.Hour).Err(); err != nil {
+		// Log the error but don't return it since we still have the user
+		log.Printf("Failed to cache user: %v", err)
+	}
+
 	return &user, nil
 }

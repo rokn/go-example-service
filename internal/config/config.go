@@ -8,6 +8,7 @@ type Config struct {
 	App      AppConfig      `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
 	Redis    RedisConfig    `mapstructure:",squash"`
+	Auth     AuthConfig     `mapstructure:",squash"`
 }
 
 func LoadConfig() (*Config, error) {
