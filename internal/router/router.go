@@ -37,6 +37,7 @@ func SetupRouter(userHandler handler.UserHandler, authHandler handler.AuthHandle
 		protected.Use(authHandler.Middleware().MiddlewareFunc())
 		{
 			protected.GET("/:id", userHandler.Get)
+			protected.GET("/me", userHandler.GetMe)
 		}
 	}
 

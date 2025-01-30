@@ -6,6 +6,7 @@ import (
 
 	"example/internal/http/handler/requests"
 	"example/internal/http/handler/responses"
+	"example/internal/model"
 	"example/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,7 @@ import (
 type UserHandler interface {
 	Create(c *gin.Context)
 	Get(c *gin.Context)
+	GetMe(c *gin.Context)
 }
 
 type userHandler struct {
@@ -89,5 +91,37 @@ func (h *userHandler) Get(c *gin.Context) {
 	}
 
 	response := responses.UserResponseFromModel(user)
+	NewSuccessResponse(c, http.StatusOK, "User retrieved successfully", response)
+}
+
+// GetMe godoc
+// @Summary Get logged in user details
+// @Description Get details of the currently logged in user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} BaseResponse{data=responses.UserResponse} "User retrieved successfully"
+// @Failure 401 {object} BaseResponse "Unauthorized"
+// @Router /users/me [get]
+func (h *userHandler) GetMe(c *gin.Context) {
+	user, exists := c.Get(identityKey)
+	if !exists {
+		NewErrorResponse(c, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	authenticatedUser, ok := user.(*model.User)
+	if !ok {
+		NewErrorResponse(c, http.StatusUnauthorized, "Invalid user data", nil)
+		return
+	}
+
+	userDetails, err := h.service.GetUser(authenticatedUser.ID)
+	if err != nil {
+		NewErrorResponse(c, http.StatusInternalServerError, "Failed to retrieve user details", []interface{}{err.Error()})
+		return
+	}
+
+	response := responses.UserResponseFromModel(userDetails)
 	NewSuccessResponse(c, http.StatusOK, "User retrieved successfully", response)
 }

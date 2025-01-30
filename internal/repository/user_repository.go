@@ -80,7 +80,7 @@ func (r *userRepository) GetByEmail(email string) (*model.User, error) {
 
 	// If not in cache, get from database
 	user = model.User{Email: email}
-	result := r.db.First(&user)
+	result := r.db.Where(user).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil

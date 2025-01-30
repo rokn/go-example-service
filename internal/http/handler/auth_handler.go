@@ -26,9 +26,9 @@ func NewAuthHandler(userService service.UserService, cfg *config.AuthConfig) (Au
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:           cfg.Realm,
 		Key:             []byte(cfg.SecretKey),
-		Timeout:         72 * time.Hour,
-		MaxRefresh:      24 * time.Hour,
-		IdentityKey:     "id",
+		Timeout:         24 * time.Hour,
+		MaxRefresh:      72 * time.Hour,
+		IdentityKey:     identityKey,
 		PayloadFunc:     payloadFunc,
 		IdentityHandler: identityHandler,
 		Authenticator:   authenticator(userService),
@@ -90,8 +90,7 @@ func authenticator(userService service.UserService) func(*gin.Context) (interfac
 }
 
 func authorizator(data interface{}, c *gin.Context) bool {
-	// Add your authorization logic here if needed
-	return true
+	return true // Authorization is now handled by route-specific middleware
 }
 
 func unauthorized(c *gin.Context, code int, message string) {
