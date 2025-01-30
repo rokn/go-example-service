@@ -33,14 +33,19 @@ definitions:
   responses.UserResponse:
     properties:
       created_at:
+        example: "2024-01-01 10:00:00"
         type: string
       email:
+        example: john.doe@example.com
         type: string
       id:
+        example: 1
         type: integer
       name:
+        example: John Doe
         type: string
       updated_at:
+        example: "2024-01-01 10:00:00"
         type: string
     type: object
 host: localhost:8080

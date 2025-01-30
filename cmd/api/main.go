@@ -6,6 +6,7 @@ import (
 	"example/internal/repository"
 	"example/internal/router"
 	"example/internal/service"
+	"example/pkg/cache"
 	"example/pkg/database"
 	"example/pkg/logger"
 	"example/pkg/redis"
@@ -47,21 +48,28 @@ func main() {
 		log.Fatal("Cannot connect to Redis", zap.Error(err))
 	}
 
-	// Initialize repositories, services, and handlers
-	userRepo := repository.NewUserRepository(db, redisClient)
+	// Initialize cache manager
+	cacheManager := cache.NewCacheManager(redisClient)
+
+	// Initialize repositories
+	userRepo := repository.NewUserRepository(db, cacheManager)
+
+	// Initialize services
 	userService := service.NewUserService(userRepo)
+
+	// Initialize handlers
 	userHandler := handler.NewUserHandler(userService)
 	authHandler, err := handler.NewAuthHandler(userService, &cfg.Auth)
 	if err != nil {
 		log.Fatal("Cannot initialize auth handler", zap.Error(err))
 	}
 
-	// Setup router
+	// Initialize and start router
 	r := router.SetupRouter(userHandler, authHandler)
 
 	// Start server
 	log.Info("Starting server", zap.String("port", cfg.App.Port))
 	if err := r.Run(":" + cfg.App.Port); err != nil {
-		log.Fatal("Cannot start server", zap.Error(err))
+		log.Fatal("Failed to start server", zap.Error(err))
 	}
 }

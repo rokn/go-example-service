@@ -21,8 +21,8 @@ func NewAuthHandler(userService *service.UserService, cfg *config.AuthConfig) (*
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:           cfg.Realm,
 		Key:             []byte(cfg.SecretKey),
-		Timeout:         time.Duration(cfg.Timeout) * time.Hour,
-		MaxRefresh:      time.Duration(cfg.MaxRefresh) * time.Hour,
+		Timeout:         72 * time.Hour,
+		MaxRefresh:      24 * time.Hour,
 		IdentityKey:     "id",
 		PayloadFunc:     payloadFunc,
 		IdentityHandler: identityHandler,
